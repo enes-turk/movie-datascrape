@@ -32,6 +32,3 @@ def clean_database(db_path='movie_scripts.db'):
     conn.close()
 
     print("Database cleaning completed.")
-
-if __name__ == "__main__":
-    clean_database()

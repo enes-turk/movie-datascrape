@@ -1,11 +1,7 @@
-import os
 import time
 from urllib.parse import urljoin
 import scrapy
-from scrapy.crawler import CrawlerProcess
 from scrapy.exceptions import DropItem
-from pipeline import SQLitePipeline, TxtExporter
-from data_manipulation import clean_database
 
 class MovieScriptScraper(scrapy.Spider):
     name = 'movie_script_scraper'
@@ -27,12 +23,6 @@ class MovieScriptScraper(scrapy.Spider):
         super(MovieScriptScraper, self).__init__(*args, **kwargs)
         self.root = 'https://subslikescript.com'
         self.start_urls = ['https://subslikescript.com/movies_letter-X']
-        self._setup_output_directory() # inline method
-        
-    def _setup_output_directory(self):
-        if not os.path.exists("scripts"):
-            os.mkdirs("scripts")
-            self.logger.info("Created 'scripts' directory.")
     
     def parse(self, response):
         movie_links = response.xpath("//article[@class='main-article']/ul/li/a/@href").getall()
@@ -67,36 +57,12 @@ class MovieScriptScraper(scrapy.Spider):
         script = ' '.join(script).strip()
         
         if not title or not script:
+            self.logger.warning(f"Missing title or script in {response.url}")
             raise DropItem(f"Missing title or script in {response.url}")
+        
+        self.logger.info(f"Processed movie: {title}")
         
         yield {
             'title': title,
             'script': script
         }
-        # self.save_as_txt(title, script)
-        
-    def save_as_txt(self, title, script):
-        filename = self._sanitize_filename(title)
-        filepath = os.path.join("scripts", filename)
-        
-        try:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(f"Title: {title}\n\n")
-                f.write(script)
-            self.logger.info(f"Saved file: {filename}")
-        except IOError as e:
-            self.logger.error(f"Error saving file: {filename}: {e}")
-    
-    @staticmethod
-    def _sanitize_filename(filename):
-        sanitized = "".join(x for x in filename if x.isalnum() or x in [' ', '_']).rstrip()
-        return sanitized.replace(' ', '_') + '.txt'
-    
-def run_spider():
-    process = CrawlerProcess()
-    process.crawl(MovieScriptScraper)
-    process.start()
-    
-if __name__ == "__main__":
-    run_spider()
-    
