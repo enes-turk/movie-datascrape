@@ -67,10 +67,7 @@ class MovieScriptScraper(scrapy.Spider):
             'title': title,
             'script': script
         }
-
-import time
-import scrapy
-
+        
 class MovieTitleScraper(scrapy.Spider):
     name = 'movie_title_scraper'
     
@@ -85,12 +82,12 @@ class MovieTitleScraper(scrapy.Spider):
     }
     
     def start_requests(self):
-        url = 'https://www.imdb.com/chart/top/?ref_=nv_mv_250'
+        url = 'https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_special,video&interests=in0000076&sort=num_votes,desc'
         yield scrapy.Request(url=url, callback=self.parse, dont_filter=True)
     
     def parse(self, response):
         # Add a delay to allow content to load
-        time.sleep(2)
+        time.sleep(25)
         
         titles = response.xpath("//div[contains(@class, 'ipc-title')]/a/h3/text()").getall()
         
@@ -105,6 +102,6 @@ class MovieTitleScraper(scrapy.Spider):
         self.logger.info(f"Scraped {len(titles)} movie titles")
         
         # If we didn't get all 250 titles, retry
-        if len(titles) < 250:
+        if len(titles) < 50:
             self.logger.warning(f"Only found {len(titles)} titles. Retrying...")
             yield scrapy.Request(url=response.url, callback=self.parse, dont_filter=True)
