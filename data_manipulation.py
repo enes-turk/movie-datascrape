@@ -1,9 +1,6 @@
 import sqlite3
 import re
 
-def create_year_from_title(title):
-    pass
-
 def clean_script(script, title):
     # Remove the specific text from the beginning of the script
     cleaned_title = re.sub(r' - full transcript', '', title, flags=re.IGNORECASE)

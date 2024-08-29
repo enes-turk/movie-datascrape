@@ -1,6 +1,6 @@
 import os
 import time
-from script_scraper import MovieScriptScraper
+from scraper import MovieScriptScraper
 from scrapy.crawler import CrawlerProcess
 from data_manipulation import clean_database
 
