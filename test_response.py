@@ -1,6 +1,5 @@
-from scraper import MovieTitleScraper
-from scrapy.crawler import CrawlerProcess
+from scraper import IMDbScraper
 
-process = CrawlerProcess()
-process.crawl(MovieTitleScraper)
-process.start()
+url = 'https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en'
+scraper = IMDbScraper(url)
+scraper.run_scraper()
