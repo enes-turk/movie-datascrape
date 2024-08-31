@@ -1,10 +1,10 @@
 import requests
 
 class MovieDataAPI():
-    def __init__(self):
+    def __init__(self, movie_titles):
         self.base_url = 'https://www.omdbapi.com/'
         self.api_key = self.read_api_key()
-        self.movies = self.get_movie_titles()  # List of movie titles
+        self.movies = movie_titles  # List of movie titles
         
         
     # Function to read the API key from cfg.txt
@@ -16,10 +16,6 @@ class MovieDataAPI():
                 if key == 'apikey':
                     return value
         return None
-    
-    # scraping IMDB bests
-    def get_movie_titles(self):
-        pass
 
     def get_movie_data(self):
         # Loop through the list of movies
