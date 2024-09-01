@@ -1,11 +1,11 @@
 import requests
+from scraper import ImdbTitlesScraper
 
 class MovieDataAPI():
     def __init__(self, movie_titles):
         self.base_url = 'https://www.omdbapi.com/'
         self.api_key = self.read_api_key()
         self.movies = movie_titles  # List of movie titles
-        
         
     # Function to read the API key from cfg.txt
     def read_api_key(self, filename='cfg.txt'):
@@ -34,3 +34,4 @@ class MovieDataAPI():
                 print(f"Movie: {movie}")
             else:
                 print(f"Error fetching data for {movie}: {response.status_code}")
+            yield data

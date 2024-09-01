@@ -1,30 +1,20 @@
-import os
-import time
-from scraper import MovieScriptScraper
-from scrapy.crawler import CrawlerProcess
-from data_manipulation import clean_database
-
-def setup_output_directory():
-    if not os.path.exists("scripts"):
-        os.makedirs("scripts")
-        print("Created 'scripts' directory.")
-
-def run_spider():
-    process = CrawlerProcess()
-    process.crawl(MovieScriptScraper)
-    process.start()
+from scraper import ImdbTitlesScraper
+from movie_data_api import MovieDataAPI
+from pipeline import MoviePipeline
 
 def main():
-    # setup_output_directory()
+    url = 'https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en'
     
-    print("Starting web scraping...")
-    run_spider()
+    title_scraper = ImdbTitlesScraper(url)
+    titles = title_scraper.run_scraper()
     
-    print("Web scraping completed. Cleaning the database...")
-    time.sleep(2)  # Give some time for the database to be updated
-    clean_database()
+    omdb_api = MovieDataAPI(titles)
     
-    print("Process completed successfully.")
+    db_pipeline = MoviePipeline()
+    db_pipeline.process_movies(omdb_api.get_movie_data())
+    db_pipeline.close()
 
 if __name__ == "__main__":
     main()
+    
+    
