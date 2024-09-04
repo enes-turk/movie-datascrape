@@ -1,6 +1,7 @@
 import requests
 from scraper import ImdbTitlesScraper
 
+# TODO: this will be changed to only get the IMDB movie codes for the urls. So we actually scrape the website.
 class MovieDataAPI():
     def __init__(self, movie_titles):
         self.base_url = 'https://www.omdbapi.com/'

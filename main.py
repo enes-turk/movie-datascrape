@@ -2,6 +2,7 @@ from scraper import ImdbTitlesScraper
 from movie_data_api import MovieDataAPI
 from pipeline import MoviePipeline
 
+# TODO: right now we hardcode the data into code without any configuration this will change into actual search.
 def main():
     url = 'https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en'
     
@@ -16,5 +17,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
     
