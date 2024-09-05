@@ -3,8 +3,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-     
-class ImdbTitlesScraper:
+
+class ImdbScraper:
     def __init__(self, url, headless=True):
         self.url = url
         self.options = webdriver.ChromeOptions()
@@ -18,10 +18,17 @@ class ImdbTitlesScraper:
         self.driver = None
 
     def setup_driver(self):
-        self.driver = webdriver.Chrome(options=self.options)
+        try:
+            self.driver = webdriver.Chrome(options=self.options)
+        except Exception as e:
+            print(f"Error initializing WebDriver: {e}")
+            self.driver = None
 
     def navigate_to_page(self):
-        self.driver.get(self.url)
+        if self.driver:
+            self.driver.get(self.url)
+        else:
+            print("Driver is not initialized!")
 
     def wait_for_element(self, locator, timeout=30):
         wait = WebDriverWait(self.driver, timeout)
@@ -40,17 +47,55 @@ class ImdbTitlesScraper:
             # Wait for the page to load
             self.wait_for_element((By.CSS_SELECTOR, ".ipc-page-content-container"))
             
-            # Wait for the movie titles
-            movie_elements = self.wait_for_elements((By.XPATH, "//div[contains(@class, 'ipc-title')]/a/h3"))
+            # Wait for the movie title elements
+            movie_title_elements = self.wait_for_elements((By.XPATH, "//div[contains(@class, 'ipc-title')]/a/h3"))
+            
+            # Wait for the movie link elements
+            movie_link_elements = self.wait_for_elements((By.XPATH, "//div[contains(@class, 'ipc-title')]/a"))
 
-            # Scrape titles
-            movie_titles = [self.clean_movie_title(element.text) for element in movie_elements[:num_titles]]
-            return movie_titles
+            # Scrape movie titles
+            movie_titles = [self.clean_movie_title(element.text) for element in movie_title_elements[:num_titles]]
+            
+            # Scrape movie links (getting the href attribute)
+            movie_links = [element.get_attribute('href') for element in movie_link_elements[:num_titles]]
+            
+            # Prepare movie_data containing titles and links
+            movie_data = [{'title': title, 'link': link} for title, link in zip(movie_titles, movie_links)]
 
-        except TimeoutException as e:
-            print(f"Timeout occurred: {e}")
-            print(self.driver.page_source)
+            return movie_data
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
             return []
+    
+    def scrape_movie_data(self):
+        try:
+            movie_data = self.scrape_movie_titles()
+            if not movie_data:
+                print("No movie data to scrape.")
+                return movie_data
+
+            # Loop through each movie's data
+            for movie in movie_data:
+                # Navigate to the movie's link
+                self.driver.get(movie['link'])
+                
+                # Wait for the page to load (adjust this as needed based on page structure)
+                self.wait_for_element((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
+
+                # Scrape the IMDb rating
+                rating_element = self.wait_for_element((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
+                imdb_rating = rating_element.text if rating_element else "N/A"
+                
+                # Add IMDb rating to the movie data
+                movie['imdb_rating'] = imdb_rating
+
+            return movie_data
+
+        except Exception as e:
+            print(f"An error occurred while scraping movie data: {e}")
+            return movie_data
+        
 
     def close_driver(self):
         if self.driver:
@@ -59,14 +104,12 @@ class ImdbTitlesScraper:
     def run_scraper(self):
         try:
             self.setup_driver()
-            self.navigate_to_page()
-            titles = self.scrape_movie_titles()
-            # for i, title in enumerate(titles, 1):
-            #     print(f"{i}. {title}")
-            return titles
+            if self.driver:
+                self.navigate_to_page()
+                data = self.scrape_movie_data()
+                return data
+            else:
+                print("Driver failed to initialize.")
+                return []
         finally:
             self.close_driver()
-
-# TODO: This will be the actual scraper.
-class ImdbDataScraper:
-    pass

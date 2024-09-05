@@ -1,5 +1,4 @@
 import requests
-from scraper import ImdbTitlesScraper
 
 # TODO: this will be changed to only get the IMDB movie codes for the urls. So we actually scrape the website.
 class MovieDataAPI():
@@ -25,13 +24,14 @@ class MovieDataAPI():
             params = {
                 'apikey': self.api_key,
                 't': movie,
-                'plot': 'full'
+                'plot': 'short'
             }
             # Send the request
             response = requests.get(self.base_url, params=params)
             # Check if the request was successful
             if response.status_code == 200:
                 data = response.json()
+                imdb_id = data.get("imdbID", 'N/A')
                 print(f"Movie: {movie}")
             else:
                 print(f"Error fetching data for {movie}: {response.status_code}")
