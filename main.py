@@ -13,9 +13,9 @@ def main():
     # TODO: will be integrated fully with pipeline
     # omdb_api = MovieDataAPI(titles)
     
-    # db_pipeline = MoviePipeline()
-    # db_pipeline.process_movies(omdb_api.get_movie_data())
-    # db_pipeline.close()
+    db_pipeline = MoviePipeline()
+    db_pipeline.process_movies(movie_data) # omdb_api.get_movie_data()
+    db_pipeline.close()
 
 if __name__ == "__main__":
     main()

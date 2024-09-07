@@ -42,7 +42,7 @@ class ImdbScraper:
         clean_title = title.split('. ', 1)[-1].strip()
         return clean_title
 
-    def scrape_movie_titles(self, num_titles=10):
+    def scrape_movie_titles(self, num_titles=1):
         try:
             # Wait for the page to load
             self.wait_for_element((By.CSS_SELECTOR, ".ipc-page-content-container"))
@@ -60,7 +60,7 @@ class ImdbScraper:
             movie_links = [element.get_attribute('href') for element in movie_link_elements[:num_titles]]
             
             # Prepare movie_data containing titles and links
-            movie_data = [{'title': title, 'link': link} for title, link in zip(movie_titles, movie_links)]
+            movie_data = [{'Title': title, 'Link': link} for title, link in zip(movie_titles, movie_links)]
 
             return movie_data
 
@@ -78,17 +78,27 @@ class ImdbScraper:
             # Loop through each movie's data
             for movie in movie_data:
                 # Navigate to the movie's link
-                self.driver.get(movie['link'])
+                self.driver.get(movie['Link'])
                 
                 # Wait for the page to load (adjust this as needed based on page structure)
                 self.wait_for_element((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
 
                 # Scrape the IMDb rating
                 rating_element = self.wait_for_element((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
-                imdb_rating = rating_element.text if rating_element else "N/A"
+                rating = rating_element.text if rating_element else "N/A"
+                
+                # Scrape the year
+                year_element = self.wait_for_element((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[1]"))
+                year = year_element.text if year_element else "N/A"
+                
+                # Scrape the runtime
+                runtime_element = self.wait_for_element((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[3]"))
+                runtime = runtime_element.text if runtime_element else "N/A"
                 
                 # Add IMDb rating to the movie data
-                movie['imdb_rating'] = imdb_rating
+                movie['imdbRating'] = rating
+                movie['Year'] = year
+                movie['Runtime'] = runtime
 
             return movie_data
 

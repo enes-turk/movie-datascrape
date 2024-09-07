@@ -27,6 +27,7 @@ class MoviePipeline:
                 country TEXT,
                 awards TEXT,
                 poster TEXT,
+                link TEXT,
                 imdbRating TEXT,
                 imdbVotes TEXT,
                 imdbID TEXT,
@@ -40,8 +41,8 @@ class MoviePipeline:
         self.cursor.execute('''
             INSERT INTO movies (
                 title, year, rated, released, runtime, genre, director, writer, actors, plot, language, 
-                country, awards, poster, imdbRating, imdbVotes, imdbID, boxOffice
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                country, awards, poster, link, imdbRating, imdbVotes, imdbID, boxOffice
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             movie_data.get('Title'),
             movie_data.get('Year'),
@@ -57,6 +58,7 @@ class MoviePipeline:
             movie_data.get('Country'),
             movie_data.get('Awards'),
             movie_data.get('Poster'),
+            movie_data.get('Link'),
             movie_data.get('imdbRating'),
             movie_data.get('imdbVotes'),
             movie_data.get('imdbID'),
