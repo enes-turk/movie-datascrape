@@ -6,7 +6,7 @@ from pipeline import MoviePipeline
 def main():
     url = 'https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en'
     
-    scraper = ImdbScraper(url)
+    scraper = ImdbScraper(url, headless=False)
     movie_data = scraper.run_scraper()
     print(movie_data) # for testing
     

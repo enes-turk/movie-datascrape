@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+import time
 
 class ImdbScraper:
     def __init__(self, url, headless=True):
@@ -29,18 +30,6 @@ class ImdbScraper:
             self.driver.get(self.url)
         else:
             print("Driver is not initialized!")
-
-    def wait_for_element(self, locator, timeout=30):
-        wait = WebDriverWait(self.driver, timeout)
-        return wait.until(EC.presence_of_element_located(locator))
-
-    def wait_for_elements(self, locator, timeout=30):
-        wait = WebDriverWait(self.driver, timeout)
-        return wait.until(EC.presence_of_all_elements_located(locator))
-    
-    def clean_movie_title(self, title):
-        clean_title = title.split('. ', 1)[-1].strip()
-        return clean_title
 
     def scrape_movie_titles(self, num_titles=1):
         try:
@@ -69,43 +58,137 @@ class ImdbScraper:
             return []
     
     def scrape_movie_data(self):
-        try:
-            movie_data = self.scrape_movie_titles()
-            if not movie_data:
-                print("No movie data to scrape.")
-                return movie_data
-
-            # Loop through each movie's data
-            for movie in movie_data:
+        movie_data = self.scrape_movie_titles()
+        for movie in movie_data:
+            try:
                 # Navigate to the movie's link
                 self.driver.get(movie['Link'])
                 
-                # Wait for the page to load (adjust this as needed based on page structure)
+                # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                self.scroll_slowly()
+                
+                # Wait for the page to load (adjust wait time based on page load speed)
                 self.wait_for_element((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
 
-                # Scrape the IMDb rating
-                rating_element = self.wait_for_element((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
-                rating = rating_element.text if rating_element else "N/A"
-                
-                # Scrape the year
-                year_element = self.wait_for_element((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[1]"))
-                year = year_element.text if year_element else "N/A"
-                
-                # Scrape the runtime
-                runtime_element = self.wait_for_element((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[3]"))
-                runtime = runtime_element.text if runtime_element else "N/A"
-                
-                # Add IMDb rating to the movie data
-                movie['imdbRating'] = rating
-                movie['Year'] = year
-                movie['Runtime'] = runtime
+                # Scrape IMDb rating
+                imdbRating = self.get_element_text((By.XPATH, "//span[contains(@class, 'sc-eb51e184-1 ljxVSS')]"))
 
-            return movie_data
+                # Scrape year of release
+                year = self.get_element_text((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[1]"))
 
-        except Exception as e:
-            print(f"An error occurred while scraping movie data: {e}")
-            return movie_data
+                # Scrape runtime
+                runtime = self.get_element_text((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[3]"))
+
+                # Scrape additional movie details
+                rated = self.get_element_text((By.XPATH, "//ul[contains(@class, 'joVhBE baseAlt')]/li[2]"))
+                released = self.get_element_text((By.XPATH, "//li[contains(@data-testid, 'title-details-releasedate')]/div/ul//a"))
+                genre = self.get_combined_text((By.XPATH, "//li[contains(@data-testid, 'storyline-genres')]/div/ul/li/a"))
+                director = self.get_combined_text((By.XPATH, "//ul[contains(@class, 'sc-bfec09a1-8 jZUbvq')]/li[1]/div//a"))
+                # writer = self.get_element_text((By.XPATH, "//a[contains(@href, '/name/nm')][2]"))
+                # actors = self.get_element_text((By.XPATH, "//a[contains(@href, '/name/nm')][3]"))
+                # plot = self.get_element_text((By.XPATH, "//span[@class='GenresAndPlot__TextContainerBreakpointXL-cum89p-2 gCtawA']"))
+                # language = self.get_element_text((By.XPATH, "//a[contains(@href, '/search/title?languages')]"))
+                # country = self.get_element_text((By.XPATH, "//a[contains(@href, '/search/title?countries')]"))
+                # awards = self.get_element_text((By.XPATH, "//span[contains(@class, 'ipc-metadata-list-item__label') and text()='Awards']"))
+                # poster = self.get_element_attribute((By.XPATH, "//img[@class='ipc-image']"), 'src')
+                # imdbVotes = self.get_element_text((By.XPATH, "//span[@class='sc-7ab21ed2-1 jGRxWM']"))
+                # imdbID = self.driver.current_url.split('/')[-2]  # Extract imdbID from the URL
+                # boxOffice = self.get_element_text((By.XPATH, "//span[contains(@class, 'ipc-metadata-list-item__list-content-item') and contains(text(), '$')]"))
+
+                # Add scraped data to the movie dictionary
+                movie.update({
+                    'imdbRating': imdbRating,
+                    'Year': year,
+                    'Runtime': runtime,
+                    'Rated': rated,
+                    'Released': released,
+                    'Genre': genre,
+                    'Director': director,
+                    # 'Writer': writer,
+                    # 'Actors': actors,
+                    # 'Plot': plot,
+                    # 'Language': language,
+                    # 'Country': country,
+                    # 'Awards': awards,
+                    # 'Poster': poster,
+                    # 'imdbVotes': imdbVotes,
+                    # 'imdbID': imdbID,
+                    # 'BoxOffice': boxOffice
+                })
+                
+                print(f"Finished: {movie['Title']}")
+            
+            except Exception as e:
+                print(f"Error scraping movie: {movie['Link']}, {str(e)}")
         
+        return movie_data
+    
+
+
+    def scroll_slowly(self, step_size=1000, pause_time=0.25):
+        """
+        Scrolls down the page slowly in increments.
+        
+        :param step_size: Number of pixels to scroll down per step.
+        :param pause_time: Time to pause between each scroll step.
+        """
+        # Get the initial height of the page
+        last_height = self.driver.execute_script("return document.body.scrollHeight")
+        
+        current_position = 0
+        
+        while current_position < last_height:
+            # Scroll down by the step size
+            self.driver.execute_script(f"window.scrollBy(0, {step_size});")
+            
+            # Update the current position
+            current_position += step_size
+            
+            # Wait for the page to load new content (if any)
+            time.sleep(pause_time)
+            
+            # Get the updated page height in case new content was loaded
+            new_height = self.driver.execute_script("return document.body.scrollHeight")
+            
+            # If the new content extends the height, update the last height
+            if new_height > last_height:
+                last_height = new_height
+
+    def clean_movie_title(self, title):
+        clean_title = title.split('. ', 1)[-1].strip()
+        return clean_title
+    
+    def wait_for_element(self, locator, timeout=30):
+        wait = WebDriverWait(self.driver, timeout)
+        return wait.until(EC.presence_of_element_located(locator))
+
+    def wait_for_elements(self, locator, timeout=30):
+        wait = WebDriverWait(self.driver, timeout)
+        return wait.until(EC.presence_of_all_elements_located(locator))
+
+    # Helper functions for safer scraping
+    def get_element_text(self, locator):
+        try:
+            element = self.wait_for_element(locator)
+            return element.text if element else "N/A"
+        except:
+            return "N/A"
+
+    def get_element_attribute(self, locator, attribute):
+        try:
+            element = self.wait_for_element(locator)
+            return element.get_attribute(attribute) if element else "N/A"
+        except:
+            return "N/A"
+    
+    def get_combined_text(self, locator):
+        try:
+            # Use wait_for_elements to get a list of elements matching the locator
+            elements = self.wait_for_elements(locator)
+            # Combine the text of each element into a single string, separated by commas
+            return ', '.join([element.text for element in elements]) if elements else "N/A"
+        except:
+            return "N/A"
 
     def close_driver(self):
         if self.driver:
