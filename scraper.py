@@ -31,7 +31,8 @@ class ImdbScraper:
             self.driver.get(self.url)
         else:
             print("Driver is not initialized!")
-
+    
+    # TODO Implement parallel scraping to fetch multiple movie details simultaneously.
     def scrape_movie_data(self, num_titles=5):
         movie_data = []
 
@@ -103,69 +104,12 @@ class ImdbScraper:
     
     def scroll_to_bottom(self):
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 3.8);")
-        time.sleep(0.75)
+        time.sleep(1)
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 2.3);")
-        time.sleep(0.75)
+        time.sleep(1)
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 1.3);")
-        time.sleep(0.75)
+        time.sleep(1)
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-    def adaptive_scroll(self, element_locator, step_size=1000, max_scroll=5, timeout=30):
-        """
-        Scrolls the page only if the required element is not visible, in increments.
-        
-        :param element_locator: The locator of the element to check for visibility.
-        :param step_size: The amount of pixels to scroll in each step.
-        :param max_scroll: Maximum number of scroll attempts before stopping.
-        :param timeout: Maximum time (in seconds) to wait for the element to appear.
-        """
-        scroll_attempts = 0
-        last_height = self.driver.execute_script("return document.body.scrollHeight")
-        
-        while scroll_attempts < max_scroll:
-            try:
-                # Try to locate the element within the visible part of the page
-                element = WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(element_locator))
-                if element.is_displayed():
-                    # Element is visible, no more scrolling needed
-                    return True
-            except TimeoutException:
-                # Element not visible, proceed to scroll
-                pass
-            
-            # Scroll down by the step size
-            self.driver.execute_script(f"window.scrollBy(0, {step_size});")
-            time.sleep(0.5)  # Allow some time for the content to load
-
-            # Check if we've reached the bottom of the page
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                # No more content to scroll, break out of loop
-                break
-
-            last_height = new_height
-            scroll_attempts += 1
-        
-        return False  # Element was not found after maximum scroll attempts
-
-
-    def scroll_page_gradually(self, step_size=1200, pause_time=0.3):
-        """
-        Scrolls down the page slowly in increments.
-        
-        :param step_size: Number of pixels to scroll down per step.
-        :param pause_time: Time to pause between each scroll step.
-        """
-        
-        last_height = self.driver.execute_script("return document.body.scrollHeight") # Get the initial height of the page
-        current_position = 0
-        while current_position < last_height:
-            self.driver.execute_script(f"window.scrollBy(0, {step_size});") # Scroll down by the step size
-            current_position += step_size # Update the current position
-            time.sleep(pause_time) # Wait for the page to load new content (if any)
-            new_height = self.driver.execute_script("return document.body.scrollHeight") # Get the updated page height in case new content was loaded
-            if new_height > last_height: # If the new content extends the height, update the last height
-                last_height = new_height
                 
     def clean_movie_link(self, link):
         clean_link = link.split('/?')[0].strip()  # Split by '/?' and keep the part before it

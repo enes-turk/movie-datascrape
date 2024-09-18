@@ -14,9 +14,9 @@ class MoviePipeline:
             CREATE TABLE IF NOT EXISTS movies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT,
-                year TEXT,
+                year INTEGER,
                 rated TEXT,
-                released TEXT,
+                released INTEGER,
                 runtime TEXT,
                 genre TEXT,
                 director TEXT,
@@ -27,11 +27,11 @@ class MoviePipeline:
                 country TEXT,
                 awards TEXT,
                 poster TEXT,
-                imdbRating TEXT,
-                imdbVotes TEXT,
+                imdbRating INTEGER,
+                imdbVotes INTEGER,
                 imdbID TEXT,
-                boxOfficeBudget TEXT,
-                boxOfficeGross TEXT
+                boxOfficeBudget INTEGER,
+                boxOfficeGross INTEGER
             )
         ''')
         self.connection.commit()
