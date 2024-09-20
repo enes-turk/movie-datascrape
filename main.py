@@ -10,7 +10,7 @@ def main():
     url = 'https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en'
     
     try:
-        scraper = ImdbScraper(url, headless=False, num_workers=5)  # Adjust num_workers as needed
+        scraper = ImdbScraper(url, headless=False, num_workers=1, num_titles=5)  # !! max 8 is important to not to hammer website's server
         movie_data = scraper.run_scraper()
         logging.info(f"Scraped {len(movie_data)} movies")
         

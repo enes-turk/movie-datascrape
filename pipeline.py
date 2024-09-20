@@ -28,8 +28,8 @@ class MoviePipeline:
                 imdbRating TEXT,
                 imdbVotes TEXT,
                 imdbID TEXT,
-                boxOfficeBudget TEXT,
-                boxOfficeGross TEXT
+                boxOfficeBudget INTEGER,
+                boxOfficeGross INTEGER
             )
         ''')
         self.connection.commit()
@@ -58,8 +58,8 @@ class MoviePipeline:
                 movie_data.get('imdbRating'),
                 movie_data.get('imdbVotes'),
                 movie_data.get('imdbID'),
-                movie_data.get('BoxOfficeBudget'),
-                movie_data.get('BoxOfficeGross')
+                int(movie_data.get('BoxOfficeBudget').replace('$', '').replace(' (estimated)', '').replace(',', '')),
+                int(movie_data.get('BoxOfficeGross').replace('$', '').replace(',', ''))
             ))
             self.connection.commit()
         except sqlite3.IntegrityError:

@@ -8,7 +8,7 @@ import logging
 from queue import Queue
 
 class ImdbScraper:
-    def __init__(self, url, headless=True, num_workers=5):
+    def __init__(self, url, headless=True, num_workers=1, num_titles=20):
         self.url = url
         self.options = webdriver.ChromeOptions()
         if headless:
@@ -19,6 +19,7 @@ class ImdbScraper:
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         self.num_workers = num_workers
+        self.num_titles=num_titles
         self.driver_pool = Queue()
         self.setup_driver_pool()
 
@@ -33,7 +34,7 @@ class ImdbScraper:
     def release_driver(self, driver):
         self.driver_pool.put(driver)
 
-    def scrape_movie_data(self, num_titles=20):
+    def scrape_movie_data(self):
         movie_data = []
         scraped_movies = set()  # To keep track of scraped movies
 
@@ -43,8 +44,8 @@ class ImdbScraper:
             self.wait_for_element(driver, (By.CSS_SELECTOR, ".ipc-page-content-container"))
             movie_title_elements = self.wait_for_elements(driver, (By.XPATH, "//div[contains(@class, 'ipc-title')]/a/h3"))
             movie_link_elements = self.wait_for_elements(driver, (By.XPATH, "//div[contains(@class, 'ipc-title')]/a"))
-            movie_titles = [self.clean_movie_title(element.text) for element in movie_title_elements[:num_titles]]
-            movie_links = [element.get_attribute('href') for element in movie_link_elements[:num_titles]]
+            movie_titles = [self.clean_movie_title(element.text) for element in movie_title_elements[:self.num_titles]]
+            movie_links = [element.get_attribute('href') for element in movie_link_elements[:self.num_titles]]
             self.release_driver(driver)
 
             with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
@@ -115,11 +116,13 @@ class ImdbScraper:
     
     def scroll_to_bottom(self, driver):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 3.8);")
-        time.sleep(1)
+        time.sleep(0.80)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 2.3);")
-        time.sleep(1)
+        time.sleep(0.80)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 1.7);")
+        time.sleep(0.80)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 1.3);")
-        time.sleep(1)
+        time.sleep(0.80)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                   
     def clean_movie_link(self, link):

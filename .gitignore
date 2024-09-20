@@ -3,3 +3,5 @@ movie_scripts.db
 scripts/
 cfg.txt
 trial/
+movie_data_api.py
+movies.db
