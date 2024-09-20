@@ -26,11 +26,10 @@ The project consists of three main Python scripts:
 ## Technologies and Libraries Used
 
 - **Python**: The primary programming language used.
+- **SQL**: The most necessary part for the pipeline.
 - **Selenium**: For web scraping and browser automation.
 - **concurrent.futures**: To implement multi-threading for faster scraping.
 - **sqlite3**: For creating and managing the SQLite database.
-- **logging**: To provide informative console output and error tracking.
-- **time**: For performance measurement and introducing delays when necessary.
 
 ## Key Features
 
@@ -65,13 +64,9 @@ def insert_movie_data(self, movie_data):
 
 The scraper collects comprehensive information about each movie, including:
 
-- Title
-- Year
+- Title, Year, Runtime, Genre
 - IMDB Rating and Votes
-- Runtime
-- Genre
-- Director and Writer
-- Actors
+- Director, Writer and Actors
 - Plot summary
 - Language and Country
 - Poster URL
@@ -81,35 +76,37 @@ The scraper collects comprehensive information about each movie, including:
 
 The next phase of this project will focus on analyzing the collected data. Potential areas of analysis include:
 
-Trend analysis of movie ratings over different decades
-Correlation studies between budget, box office performance, and ratings
-Genre popularity shifts over time
-Network analysis of collaborations between directors, writers, and actors
-Predictive modeling for movie success based on various factors
+- Trend analysis of movie ratings over different decades
+- Correlation studies between budget, box office performance, and ratings
+- Genre popularity shifts over time
+- Network analysis of collaborations between directors, writers, and actors
+- Predictive modeling for movie success based on various factors
 
 ## Installation and Usage
 
 **1.** Clone the repository:
 
-**2** Install required dependencies:
+**2.** Install required dependencies:
 
 ```python
 pip install selenium
 ```
 
-**3** Ensure Chrome and ChromeDriver are installed and properly configured
+**3.** Ensure Chrome and ChromeDriver are installed and properly configured
 
-**4** Use a link from specific search filters from the example website:
+**4.** Use a link from specific search filters from the example website:
 
 - https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en
 
-**5** Then paste this link to url section in `main.py` the script currently work on this specific link and pulls up to 50 movies from the filtered movies. A method for additional movie scrape will be added.
+**5.** Then paste this link to url section in `main.py` the script currently work on this specific link and pulls up to 50 movies from the filtered movies. A method for additional movie scrape will be added.
 
 ```python
 url = 'https://www.imdb.com/search/title/?title_type=feature&genres=sci-fi&interests=in0000076&sort=num_votes,desc&language=en'
 ```
 
-**4** Run the main script
+**6.** Run the main script then the scrape process will begin.
+
+**7.** `movies.db` will be created on the working folder. This SQLite file is designated for the usecase in projects in local environment. To view the file python scripts can be initialized, [DB Browser](https://sqlitebrowser.org/) can be used if installed or the web apps like [sqliteviewer](https://sqliteviewer.app/) can be used for fast examination.
 
 ## Disclaimer
 
